@@ -2,28 +2,30 @@
 
 # Valeur par défaut
 ENDPOINT="ovh-eu"
+PROFILE="default"
 BASE_DIR="$HOME/.ovh-sub"
-OUTPUT_FILE="$BASE_DIR/.env"
 
 # Fonction d'aide
 usage() {
-    echo "Usage: $0 -k APP_KEY -s APP_SECRET -c CONSUMER_KEY [-e ENDPOINT]"
+    echo "Usage: $0 -k APP_KEY -s APP_SECRET -c CONSUMER_KEY [-e ENDPOINT] [-n PROFILE]"
     echo ""
     echo "  -k  OVH Application Key"
     echo "  -s  OVH Application Secret"
     echo "  -c  OVH Consumer Key"
     echo "  -e  Endpoint OVH (défaut: ovh-eu)"
+    echo "  -n  Nom du profil (défaut: default)"
     echo "  -h  Affiche cette aide"
     exit 1
 }
 
 # Récupération des arguments
-while getopts "k:s:c:e:h" opt; do
+while getopts "k:s:c:e:n:h" opt; do
     case $opt in
         k) APP_KEY="$OPTARG" ;;
         s) APP_SECRET="$OPTARG" ;;
         c) CONSUMER_KEY="$OPTARG" ;;
         e) ENDPOINT="$OPTARG" ;;
+        n) PROFILE="$OPTARG" ;;
         h) usage ;;
         *) usage ;;
     esac
@@ -35,10 +37,12 @@ if [ -z "$APP_KEY" ] || [ -z "$APP_SECRET" ] || [ -z "$CONSUMER_KEY" ]; then
     usage
 fi
 
-# Création du fichier
-echo "⚙️  Génération du fichier $OUTPUT_FILE..."
+OUTPUT_FILE="$BASE_DIR/$PROFILE.env"
 
-mkdir $BASE_DIR
+# Création du répertoire si nécessaire
+mkdir -p "$BASE_DIR"
+
+echo "⚙️  Génération du fichier $OUTPUT_FILE (profil: $PROFILE)..."
 
 cat << EOF > "$OUTPUT_FILE"
 OVH_ENDPOINT=$ENDPOINT
@@ -52,3 +56,5 @@ chmod 600 "$OUTPUT_FILE"
 
 echo "✅ Fichier créé avec succès !"
 echo "🔒 Permissions restreintes (chmod 600) appliquées pour la sécurité."
+echo ""
+echo "Utilisation : ovh-sub [domain] [subdomain] --profile $PROFILE"
