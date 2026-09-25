@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import ipaddress
 import sys
 import ovh
 import requests
@@ -121,12 +122,18 @@ def refresh_dns(client, domain, subdomain, dry_run=False):
         client.post(f'/domain/zone/{domain}/refresh')
 
 
-def main(domain, subdomain, dry_run=False, remove_sub=False, force=False, profile='default'):
+def main(domain, subdomain, dry_run=False, remove_sub=False, force=False, profile='default',
+         ip=None, keep_existing=False):
     client = load_ovh_client(profile)
-    target_ip = get_public_ip()
 
     try:
         record_id = get_domain_record_id(client, domain, subdomain, remove_sub)
+
+        if record_id != 0 and keep_existing and not remove_sub:
+            print("✅ Sous-domaine conservé tel quel (--keep-existing).")
+            return
+
+        target_ip = None if remove_sub else (ip or get_public_ip())
 
         if record_id != 0:
             if remove_sub:
@@ -151,6 +158,14 @@ def main(domain, subdomain, dry_run=False, remove_sub=False, force=False, profil
         refresh_dns(client, domain, subdomain, dry_run)
     except ovh.exceptions.APIError as e:
         print(f"❌ Erreur API OVH : {e}")
+        sys.exit(1)
+
+
+def ipv4(value):
+    try:
+        return str(ipaddress.IPv4Address(value))
+    except ipaddress.AddressValueError:
+        raise argparse.ArgumentTypeError(f"adresse IPv4 invalide : {value}")
 
 
 if __name__ == "__main__":
@@ -163,7 +178,10 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--remove", action="store_true", help="Supprime le sous-domaine.")
     parser.add_argument("-f", "--force", action="store_true", help="Ne demande pas de confirmation.")
     parser.add_argument("-p", "--profile", default="default", help="Profil de credentials à utiliser (défaut: default).")
+    parser.add_argument("-i", "--ip", type=ipv4, help="IP cible (défaut : IP publique de la machine).")
+    parser.add_argument("-k", "--keep-existing", action="store_true", help="Ne modifie pas un sous-domaine existant.")
 
     args = parser.parse_args()
 
-    main(args.domain, args.subdomain, dry_run=args.dry, remove_sub=args.remove, force=args.force, profile=args.profile)
+    main(args.domain, args.subdomain, dry_run=args.dry, remove_sub=args.remove, force=args.force, profile=args.profile,
+         ip=args.ip, keep_existing=args.keep_existing)
