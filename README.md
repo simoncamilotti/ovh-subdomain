@@ -61,6 +61,10 @@ ovh-sub [domain] [sub_domain] [options]
 | `-f`, `--force` | Ne demande pas de confirmation |
 | `-d`, `--dry` | Dry run (aucune modification appliquée) |
 | `-p`, `--profile` | Profil de credentials à utiliser (défaut : `default`) |
+| `-i`, `--ip` | IP cible (défaut : IP publique de la machine) |
+| `-k`, `--keep-existing` | Ne modifie pas un sous-domaine qui existe déjà |
+
+La commande sort avec un code non nul en cas d'erreur de configuration ou de l'API OVH.
 
 #### Exemples
 ```shell
@@ -75,6 +79,9 @@ ovh-sub mondomaine.fr vpn --remove
 
 # Supprimer sans confirmation
 ovh-sub mondomaine.fr vpn --remove --force
+
+# Pointer vers une IP précise, sans toucher au sous-domaine s'il existe
+ovh-sub mondomaine.fr vpn --ip 203.0.113.10 --keep-existing
 
 # Tester sans appliquer
 ovh-sub mondomaine.fr vpn --dry
