@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Entry point for the global command: runs command.py with the project's virtual
+# environment, so a system Python upgrade does not break the dependencies.
+set -euo pipefail
+dir=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)
+python="$dir/.venv/bin/python"
+if [[ ! -x $python ]]; then
+  echo "ovh-sub: no virtual environment in $dir/.venv. Create it with:" >&2
+  echo "  python3 -m venv $dir/.venv && $dir/.venv/bin/pip install -r $dir/requirements.txt" >&2
+  exit 1
+fi
+exec "$python" "$dir/command.py" "$@"

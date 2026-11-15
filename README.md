@@ -3,15 +3,22 @@ Script de création/mise à jour/suppression de sous-domaine chez OVH.
 
 ### Installation
 ```shell
-git clone git@github.com:scamilotti1/ovh-subdomain.git
+git clone git@github.com:simoncamilotti/ovh-subdomain.git
 cd ovh-subdomain
-pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 ```
+
+Après une mise à jour de Python, recréez l'environnement :
+`python3 -m venv --clear .venv && .venv/bin/pip install -r requirements.txt`.
 
 #### Rendre la commande globale
 ```shell
-sudo ln -s $(pwd)/command.py /usr/local/bin/ovh-sub
+sudo ln -sf $(pwd)/ovh-sub /usr/local/bin/ovh-sub
 ```
+
+Le lien pointe vers le script `ovh-sub`, qui lance `command.py` avec le Python de `.venv` : la commande
+ne dépend pas des paquets installés sur le Python du système.
 
 ---
 
